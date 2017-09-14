@@ -26,14 +26,14 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
     // render each segment of the snake
     for &(x, y) in segments.iter() {
       rectangle([0.0, 0.0, 0.0, 1.0],
-                [x, y, snake::SNAKE_SEGMENT_WIDTH, snake::SNAKE_SEGMENT_WIDTH],
+                [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH as f64, snake::SNAKE_SEGMENT_WIDTH as f64],
                 context.transform,
                 graphics);
     }
 
     // render food
     rectangle([0.0, 0.0, 0.0, 1.0],
-              [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH, snake::SNAKE_SEGMENT_WIDTH],
+              [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH as f64, snake::SNAKE_SEGMENT_WIDTH as f64],
               context.transform,
               graphics);
   });
@@ -42,7 +42,7 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
 pub fn run(width: u32, height: u32) {
   let mut last_position_update_timestamp = Instant::now();
   let mut next_direction = Direction::Right;
-  let mut game_board = Board::new(width, height, Food::next_rand_food(width, height), Snake::new(50.0, 50.0, next_direction));
+  let mut game_board = Board::new(width, height, Food::next_rand_food(width, height), Snake::new(50, 50, next_direction));
   let mut window: PistonWindow = WindowSettings::new(TITLE, [game_board.width, game_board.height])
     .exit_on_esc(true).build().unwrap();
 
@@ -64,6 +64,14 @@ pub fn run(width: u32, height: u32) {
       snake = snake.change_direction(next_direction);
       game_board.set_snake(snake);
       last_position_update_timestamp = Instant::now();
+
+      // eat food?
+      let (snake_head_x, snake_head_y) = game_board.get_snake().segments[0];
+      let food = game_board.get_food();
+      if snake_head_x == food.x as i32 && snake_head_y == food.y as i32 {
+        println!("ha!");
+        // eat food here - add head!
+      }
     } else {
       continue;
     }
