@@ -11,44 +11,58 @@ use food::Food;
 use snake::Snake;
 
 use piston_window::*;
+use std::time::Instant;
+
+const ONE_HUNDRED_MS: u32 = 100000000;
+static TITLE: &'static str = "Rusnake!";
 
 fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &Board) {
   window.draw_2d(event, |context, graphics| {
-    let &Snake { x, y, .. } = game_board.get_snake();
+    let &Snake { ref segments, .. } = game_board.get_snake();
     clear([1.0; 4], graphics);
 
-    // render snake
-    rectangle([0.0, 0.0, 0.0, 1.0],
-              [x, y, 10.0, 10.0],
-              context.transform,
-              graphics);
+    // render each segment of the snake
+    for &(x, y) in segments.iter() {
+      rectangle([0.0, 0.0, 0.0, 1.0],
+                [x, y, snake::SNAKE_SEGMENT_WIDTH, snake::SNAKE_SEGMENT_WIDTH],
+                context.transform,
+                graphics);
+    }
 
     // TODO render food
   });
 }
 
 pub fn run(width: u32, height: u32) {
-  let mut game_board = Board::new(width, height, Food, Snake::new(50.0, 50.0, Direction::Right));
-  let mut window: PistonWindow = WindowSettings::new("Rusnake!", [game_board.width, game_board.height])
+  let mut last_position_update_timestamp = Instant::now();
+  let mut next_direction = Direction::Right;
+  let mut game_board = Board::new(width, height, Food, Snake::new(50.0, 50.0, next_direction));
+  let mut window: PistonWindow = WindowSettings::new(TITLE, [game_board.width, game_board.height])
     .exit_on_esc(true).build().unwrap();
 
   while let Some(event) = window.next() {
+    if let Some(Button::Keyboard(key)) = event.press_args() {
+        next_direction = match key {
+            Key::Right => Direction::Right,
+            Key::Left  => Direction::Left,
+            Key::Up    => Direction::Up,
+            Key::Down  => Direction::Down,
+            _          => next_direction,
+        };
+    }
+
     render(&mut window, &event, &game_board);
 
-    let mut snake = game_board.get_snake().advance();
-    if let Some(Button::Keyboard(key)) = event.press_args() {
-        snake = match key {
-            Key::Right => snake.change_direction(Direction::Right),
-            Key::Left  => snake.change_direction(Direction::Left),
-            Key::Up    => snake.change_direction(Direction::Up),
-            Key::Down  => snake.change_direction(Direction::Down),
-            _          => snake,
-        };
+    if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS {
+      let mut snake = game_board.get_snake().advance();
+      snake = snake.change_direction(next_direction);
+      game_board.set_snake(snake);
+      last_position_update_timestamp = Instant::now();
+    } else {
+      continue;
     }
 
     // TODO consume food logic
     // TODO game_board.set_food(food);
-
-    game_board.set_snake(snake);
   }
 }

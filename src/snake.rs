@@ -2,26 +2,36 @@ use direction::Direction;
 
 #[derive(Debug, PartialEq)]
 pub struct Snake {
-  pub x: f64,
-  pub y: f64,
+  pub segments: Vec<(f64, f64)>,
   pub direction: Direction
 }
 
-const SNAKE_STEP: f64 = 0.2;
+pub const SNAKE_STEP: f64 = 5.0;
+pub const SNAKE_SEGMENT_WIDTH: f64 = 5.0;
+pub const START_SEGMENTS: u32 = 3;
 
 impl Snake {
   pub fn new(x: f64, y: f64, direction: Direction) -> Snake {
-    Snake { x, y, direction }
+    let mut segments = vec![];
+    for i in 0..START_SEGMENTS {
+      let i = i as f64;
+      segments.push((x - (SNAKE_SEGMENT_WIDTH * i), y));
+    }
+    Snake { direction, segments }
   }
 
   pub fn advance(&self) -> Snake {
-      let (x, y) = match self.direction {
-        Direction::Up    => (self.x, self.y - SNAKE_STEP),
-        Direction::Down  => (self.x, self.y + SNAKE_STEP),
-        Direction::Left  => (self.x - SNAKE_STEP, self.y),
-        Direction::Right => (self.x + SNAKE_STEP, self.y),
+      let mut segments = self.segments.clone();
+      segments.pop();
+      let &(x, y) = segments.first().unwrap();
+      let (head_x, head_y) = match self.direction {
+        Direction::Up    => (x, y - SNAKE_STEP),
+        Direction::Down  => (x, y + SNAKE_STEP),
+        Direction::Left  => (x - SNAKE_STEP, y),
+        Direction::Right => (x + SNAKE_STEP, y)
       };
-      Snake::new(x, y, self.direction)
+      segments.insert(0, (head_x, head_y));
+      Snake { segments, direction: self.direction }
   }
 
   pub fn change_direction(&self, direction: Direction) -> Snake {
@@ -31,7 +41,8 @@ impl Snake {
     } else {
       direction
     };
-    Snake::new(self.x, self.y, direction)
+
+    Snake { segments: self.segments.clone(), direction }
   }
 }
 
@@ -41,37 +52,40 @@ mod test {
 
   #[test]
   fn should_create_new_snake() {
-      let x = 5.0;
-      let y = 3.5;
+      let x = 25.0;
+      let y = 23.5;
       let direction = Direction::Right;
 
-      let expected = Snake { x, y, direction};
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2.0, y)];
+      let expected = Snake { segments, direction};
       let actual = Snake::new(x, y, direction);
 
       assert_eq!(expected, actual);
   }
 
   #[test]
-  fn should_decrease_on_y_axis_when_advance_up() {
-      let x = 5.0;
-      let y = 3.5;
+  fn should_decrease_new_segment_on_y_axis_when_advance_up() {
+      let x = 25.0;
+      let y = 23.5;
       let direction = Direction::Up;
       let snake = Snake::new(x, y, direction);
 
-      let expected = Snake { x, y: y - SNAKE_STEP, direction };
+      let segments = vec![(x, y - SNAKE_STEP), (x, y), (x - SNAKE_SEGMENT_WIDTH, y)];
+      let expected = Snake { segments, direction };
       let actual = snake.advance();
 
       assert_eq!(expected, actual);
   }
 
   #[test]
-  fn should_advance_on_y_axis_when_advance_down() {
-      let x = 5.0;
-      let y = 3.5;
+  fn should_increase_new_segment_on_y_axis_when_advance_down() {
+      let x = 25.0;
+      let y = 23.5;
       let direction = Direction::Down;
       let snake = Snake::new(x, y, direction);
 
-      let expected = Snake { x, y: y + SNAKE_STEP, direction };
+      let segments = vec![(x, y + SNAKE_STEP), (x, y), (x - SNAKE_SEGMENT_WIDTH, y)];
+      let expected = Snake { segments , direction };
       let actual = snake.advance();
 
       assert_eq!(expected, actual);
@@ -79,12 +93,12 @@ mod test {
 
   #[test]
   fn should_change_direction_from_left_to_up() {
-      let x = SNAKE_STEP;
-      let y = SNAKE_STEP;
-      let direction = Direction::Left;
-      let snake = Snake::new(x, y, direction);
+      let x = 25.0;
+      let y = 23.5;
+      let snake = Snake::new(x, y, Direction::Left);
 
-      let expected = Snake { x, y, direction: Direction::Up };
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2.0, y)];
+      let expected = Snake { segments, direction: Direction::Up };
       let actual = snake.change_direction(Direction::Up);
 
       assert_eq!(expected, actual);
@@ -92,12 +106,12 @@ mod test {
 
   #[test]
   fn should_not_change_direction_if_new_direction_is_opposite_to_current() {
-      let x = SNAKE_STEP;
-      let y = SNAKE_STEP;
-      let direction = Direction::Left;
-      let snake = Snake::new(x, y, direction);
+      let x = 25.0;
+      let y = 23.5;
+      let snake = Snake::new(x, y, Direction::Left);
 
-      let expected = Snake { x, y, direction: Direction::Left };
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2.0, y)];
+      let expected = Snake { segments, direction: Direction::Left };
       let actual = snake.change_direction(Direction::Right);
 
       assert_eq!(expected, actual);
