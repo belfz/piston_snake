@@ -2,7 +2,7 @@
 use rand::distributions::{IndependentSample, Range};
 use rand::thread_rng;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Food {
   pub x: u32,
   pub y: u32,

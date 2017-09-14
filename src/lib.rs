@@ -62,21 +62,20 @@ pub fn run(width: u32, height: u32) {
     if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS {
       let mut snake = game_board.get_snake().advance();
       snake = snake.change_direction(next_direction);
-      game_board.set_snake(snake);
-      last_position_update_timestamp = Instant::now();
 
       // eat food?
       let (snake_head_x, snake_head_y) = game_board.get_snake().segments[0];
-      let food = game_board.get_food();
+      let food = game_board.get_food().clone();
       if snake_head_x == food.x as i32 && snake_head_y == food.y as i32 {
-        println!("ha!");
-        // eat food here - add head!
+        snake = snake.eat_food(food);
+
+        // new food!
       }
+      
+      game_board = game_board.set_snake(snake);
+      last_position_update_timestamp = Instant::now();
     } else {
       continue;
     }
-
-    // TODO consume food logic
-    // TODO game_board.set_food(food);
   }
 }

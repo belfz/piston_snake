@@ -1,4 +1,5 @@
 use direction::Direction;
+use food::Food;
 
 #[derive(Debug, PartialEq)]
 pub struct Snake {
@@ -33,6 +34,20 @@ impl Snake {
       Snake { segments, direction: self.direction }
   }
 
+  pub fn eat_food(&self, food: Food) -> Snake {
+    let mut segments = self.segments.clone();
+    let x = food.x as i32;
+    let y = food.y as i32;
+    let (head_x, head_y) = match self.direction {
+        Direction::Up    => (x, y - SNAKE_STEP as i32),
+        Direction::Down  => (x, y + SNAKE_STEP as i32),
+        Direction::Left  => (x - SNAKE_STEP as i32, y),
+        Direction::Right => (x + SNAKE_STEP as i32, y)
+      };
+    segments.insert(0, (head_x, head_y));
+    Snake { segments, direction: self.direction }
+  }
+
   pub fn change_direction(&self, direction: Direction) -> Snake {
     let direction = if self.direction.get_opposite_direction() == direction {
       // can't change direction to opposite
@@ -55,7 +70,7 @@ mod test {
       let y = 23;
       let direction = Direction::Right;
 
-      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2, y)];
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
       let expected = Snake { segments, direction};
       let actual = Snake::new(x, y, direction);
 
@@ -69,7 +84,7 @@ mod test {
       let direction = Direction::Up;
       let snake = Snake::new(x, y, direction);
 
-      let segments = vec![(x, y - SNAKE_STEP), (x, y), (x - SNAKE_SEGMENT_WIDTH, y)];
+      let segments = vec![(x, y - SNAKE_STEP as i32), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
       let expected = Snake { segments, direction };
       let actual = snake.advance();
 
@@ -83,7 +98,7 @@ mod test {
       let direction = Direction::Down;
       let snake = Snake::new(x, y, direction);
 
-      let segments = vec![(x, y + SNAKE_STEP), (x, y), (x - SNAKE_SEGMENT_WIDTH, y)];
+      let segments = vec![(x, y + SNAKE_STEP as i32), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
       let expected = Snake { segments , direction };
       let actual = snake.advance();
 
@@ -96,7 +111,7 @@ mod test {
       let y = 23;
       let snake = Snake::new(x, y, Direction::Left);
 
-      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2, y)];
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
       let expected = Snake { segments, direction: Direction::Up };
       let actual = snake.change_direction(Direction::Up);
 
@@ -109,10 +124,24 @@ mod test {
       let y = 23;
       let snake = Snake::new(x, y, Direction::Left);
 
-      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH, y), (x - SNAKE_SEGMENT_WIDTH * 2, y)];
+      let segments = vec![(x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
       let expected = Snake { segments, direction: Direction::Left };
       let actual = snake.change_direction(Direction::Right);
 
       assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn eat_food_should_add_head_and_advance() {
+    let x = 25;
+    let y = 23;
+    let food = Food { x: x as u32, y: y as u32 };
+    let snake = Snake::new(x, y, Direction::Right);
+
+    let segments = vec![(x + SNAKE_SEGMENT_WIDTH as i32, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
+    let expected = Snake { segments, direction: Direction::Right };
+    let actual = snake.eat_food(food);
+
+    assert_eq!(expected, actual);
   }
 }
