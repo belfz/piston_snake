@@ -14,12 +14,7 @@ impl Board {
       Board { width, height, food, snake }
   }
 
-//   pub fn set_snake(&mut self, snake: Snake) {
-//       self.snake = snake;
-//   }
-
   pub fn set_snake(self, snake: Snake) -> Board {
-    //   self.snake = snake;
       Board {
           width: self.width,
           height: self.height,
@@ -32,8 +27,13 @@ impl Board {
       &self.snake
   }
 
-  pub fn set_food(&mut self, food: Food) {
-      self.food = food;
+  pub fn set_food(self, food: Food) -> Board {
+      Board {
+          width: self.width,
+          height: self.height,
+          food: food,
+          snake: self.snake
+      }
   }
 
   pub fn get_food(&self) -> &Food {

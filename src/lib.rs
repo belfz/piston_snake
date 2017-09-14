@@ -70,6 +70,8 @@ pub fn run(width: u32, height: u32) {
         snake = snake.eat_food(food);
 
         // new food!
+        let new_food = Food::next_rand_food(width, height);
+        game_board = game_board.set_food(new_food);
       }
       
       game_board = game_board.set_snake(snake);
