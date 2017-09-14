@@ -25,6 +25,10 @@ impl Board {
   pub fn set_food(&mut self, food: Food) {
       self.food = food;
   }
+
+  pub fn get_food(&self) -> &Food {
+      &self.food
+  }
 }
 
 // TODO add tests

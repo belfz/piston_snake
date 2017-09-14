@@ -1,4 +1,5 @@
 extern crate piston_window;
+extern crate rand;
 
 mod board;
 mod direction;
@@ -19,6 +20,7 @@ static TITLE: &'static str = "Rusnake!";
 fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &Board) {
   window.draw_2d(event, |context, graphics| {
     let &Snake { ref segments, .. } = game_board.get_snake();
+    let &Food { x, y } = game_board.get_food();
     clear([1.0; 4], graphics);
 
     // render each segment of the snake
@@ -29,14 +31,18 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
                 graphics);
     }
 
-    // TODO render food
+    // render food
+    rectangle([0.0, 0.0, 0.0, 1.0],
+              [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH, snake::SNAKE_SEGMENT_WIDTH],
+              context.transform,
+              graphics);
   });
 }
 
 pub fn run(width: u32, height: u32) {
   let mut last_position_update_timestamp = Instant::now();
   let mut next_direction = Direction::Right;
-  let mut game_board = Board::new(width, height, Food, Snake::new(50.0, 50.0, next_direction));
+  let mut game_board = Board::new(width, height, Food::next_rand_food(width, height), Snake::new(50.0, 50.0, next_direction));
   let mut window: PistonWindow = WindowSettings::new(TITLE, [game_board.width, game_board.height])
     .exit_on_esc(true).build().unwrap();
 
