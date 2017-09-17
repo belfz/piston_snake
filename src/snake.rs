@@ -20,7 +20,7 @@ impl Snake {
     Snake { direction, segments }
   }
 
-  pub fn advance(&self) -> Snake {
+  pub fn advance(&self, board_width: i32, board_height: i32) -> Snake {
       let mut segments = self.segments.clone();
       segments.pop();
       let &(x, y) = segments.first().unwrap();
@@ -31,10 +31,19 @@ impl Snake {
         Direction::Right => (x + SNAKE_STEP as i32, y)
       };
       segments.insert(0, (head_x, head_y));
-      Snake { segments, direction: self.direction }
+      segments = segments
+        .iter()
+        .map(|&(x, y)| {
+          // TODO take the bounds from the board / runtime
+          let x = if x < 0 { board_width } else if x > board_width { 0 } else { x };
+          let y = if y < 0 { board_height } else if y > board_height { 0 } else { y };
+          (x, y)
+        })
+        .collect();
+      Snake { segments, ..*self }
   }
 
-  pub fn eat_food(&self, food: Food) -> Snake {
+  pub fn eat_food(&self, food: &Food) -> Snake {
     let mut segments = self.segments.clone();
     let x = food.x as i32;
     let y = food.y as i32;
@@ -45,7 +54,7 @@ impl Snake {
         Direction::Right => (x + SNAKE_STEP as i32, y)
       };
     segments.insert(0, (head_x, head_y));
-    Snake { segments, direction: self.direction }
+    Snake { segments, ..*self }
   }
 
   pub fn change_direction(&self, direction: Direction) -> Snake {
@@ -59,6 +68,9 @@ impl Snake {
     Snake { segments: self.segments.clone(), direction }
   }
 }
+
+// TODO implement collision detection
+// TODO go thru walls on the other side
 
 #[cfg(test)]
 mod test {
@@ -86,7 +98,7 @@ mod test {
 
       let segments = vec![(x, y - SNAKE_STEP as i32), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
       let expected = Snake { segments, direction };
-      let actual = snake.advance();
+      let actual = snake.advance(160, 160);
 
       assert_eq!(expected, actual);
   }
@@ -100,7 +112,7 @@ mod test {
 
       let segments = vec![(x, y + SNAKE_STEP as i32), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
       let expected = Snake { segments , direction };
-      let actual = snake.advance();
+      let actual = snake.advance(160, 160);
 
       assert_eq!(expected, actual);
   }
@@ -140,7 +152,7 @@ mod test {
 
     let segments = vec![(x + SNAKE_SEGMENT_WIDTH as i32, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
     let expected = Snake { segments, direction: Direction::Right };
-    let actual = snake.eat_food(food);
+    let actual = snake.eat_food(&food);
 
     assert_eq!(expected, actual);
   }

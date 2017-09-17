@@ -60,16 +60,13 @@ pub fn run(width: u32, height: u32) {
     render(&mut window, &event, &game_board);
 
     if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS {
-      let mut snake = game_board.get_snake().advance();
+      let mut snake = game_board.get_snake().advance(game_board.width as i32, game_board.height as i32);
       snake = snake.change_direction(next_direction);
 
-      // eat food?
       let (snake_head_x, snake_head_y) = game_board.get_snake().segments[0];
-      let food = game_board.get_food().clone();
-      if snake_head_x == food.x as i32 && snake_head_y == food.y as i32 {
-        snake = snake.eat_food(food);
+      if snake_head_x == game_board.get_food().x as i32 && snake_head_y == game_board.get_food().y as i32 {
+        snake = snake.eat_food(game_board.get_food());
 
-        // new food!
         let new_food = Food::next_rand_food(width, height);
         game_board = game_board.set_food(new_food);
       }

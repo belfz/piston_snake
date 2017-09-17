@@ -2,14 +2,14 @@
 use rand::distributions::{IndependentSample, Range};
 use rand::thread_rng;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Food {
   pub x: u32,
   pub y: u32,
 }
 
 fn round_to_tens(num: u32) -> u32 {
-    ((num + 5) / 10) * 10
+    (num / 10) * 10
 }
 
 impl Food {
