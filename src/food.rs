@@ -23,4 +23,18 @@ impl Food {
   }
 }
 
-// TODO add tests
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn next_rand_food_should_return_food_with_position_within_bounds() {
+    let upper_bound_x = 50;
+    let upper_bound_y = 30;
+
+    let food = Food::next_rand_food(upper_bound_x, upper_bound_y);
+
+    assert!(food.x <= upper_bound_x);
+    assert!(food.y <= upper_bound_y);
+  }
+}
