@@ -70,7 +70,6 @@ impl Snake {
 }
 
 // TODO implement collision detection
-// TODO go thru walls on the other side
 
 #[cfg(test)]
 mod test {
@@ -113,6 +112,62 @@ mod test {
       let segments = vec![(x, y + SNAKE_STEP as i32), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
       let expected = Snake { segments , direction };
       let actual = snake.advance(160, 160);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_down_over_the_boundary() {
+      let x = 30;
+      let y = 30;
+      let direction = Direction::Down;
+      let snake = Snake::new(x, y, direction);
+
+      let segments = vec![(x, 0), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
+      let expected = Snake { segments , direction };
+      let actual = snake.advance(30, 30);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_up_over_the_boundary() {
+      let x = 30;
+      let y = 0;
+      let direction = Direction::Up;
+      let snake = Snake::new(x, y, direction);
+
+      let segments = vec![(x, 30), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
+      let expected = Snake { segments , direction };
+      let actual = snake.advance(30, 30);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_right_over_the_boundary() {
+      let x = 30;
+      let y = 20;
+      let direction = Direction::Right;
+      let snake = Snake::new(x, y, direction);
+
+      let segments = vec![(0, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
+      let expected = Snake { segments , direction };
+      let actual = snake.advance(30, 30);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_left_over_the_boundary() {
+      let x = 0;
+      let y = 20;
+      let direction = Direction::Left;
+      let snake = Snake { segments: vec![(x, y), (x + SNAKE_SEGMENT_WIDTH as i32, y), (x + 2 * SNAKE_SEGMENT_WIDTH as i32, y)], direction };
+
+      let segments = vec![(30, y), (0, y), (10, y)];
+      let expected = Snake { segments , direction };
+      let actual = snake.advance(30, 30);
 
       assert_eq!(expected, actual);
   }
