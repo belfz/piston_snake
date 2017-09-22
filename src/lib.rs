@@ -17,6 +17,13 @@ use std::time::Instant;
 const ONE_HUNDRED_MS: u32 = 100000000;
 static TITLE: &'static str = "Rusnake!";
 
+fn draw_block<G: Graphics>(x: f64, y: f64, width: f64, context: &Context, graphics: &mut G) {
+  rectangle([0.0, 0.0, 0.0, 1.0],
+                [x, y, width, width],
+                context.transform,
+                graphics);
+}
+
 fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &Board) {
   window.draw_2d(event, |context, graphics| {
     let &Snake { ref segments, .. } = game_board.get_snake();
@@ -26,17 +33,11 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
 
     // render each segment of the snake
     for &(x, y) in segments.iter() {
-      rectangle([0.0, 0.0, 0.0, 1.0],
-                [x as f64, y as f64, width, width],
-                context.transform,
-                graphics);
+      draw_block(x as f64, y as f64, width, &context, graphics);
     }
 
     // render food
-    rectangle([0.0, 0.0, 0.0, 1.0],
-              [x as f64, y as f64, width, width],
-              context.transform,
-              graphics);
+    draw_block(x as f64, y as f64, width, &context, graphics);
   });
 }
 
@@ -63,7 +64,6 @@ pub fn run(width: u32, height: u32) {
     if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS && game_board.is_game_running() {
       let mut snake = game_board.get_snake().advance(game_board.width as i32, game_board.height as i32);
       if snake.has_collision() {
-        println!("collision!");
         game_board = game_board.set_game_is_running(false);
         continue;
       }
