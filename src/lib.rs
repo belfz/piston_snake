@@ -21,19 +21,20 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
   window.draw_2d(event, |context, graphics| {
     let &Snake { ref segments, .. } = game_board.get_snake();
     let &Food { x, y } = game_board.get_food();
+    let width = snake::SNAKE_SEGMENT_WIDTH as f64;
     clear([1.0; 4], graphics);
 
     // render each segment of the snake
     for &(x, y) in segments.iter() {
       rectangle([0.0, 0.0, 0.0, 1.0],
-                [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH as f64, snake::SNAKE_SEGMENT_WIDTH as f64],
+                [x as f64, y as f64, width, width],
                 context.transform,
                 graphics);
     }
 
     // render food
     rectangle([0.0, 0.0, 0.0, 1.0],
-              [x as f64, y as f64, snake::SNAKE_SEGMENT_WIDTH as f64, snake::SNAKE_SEGMENT_WIDTH as f64],
+              [x as f64, y as f64, width, width],
               context.transform,
               graphics);
   });
@@ -45,6 +46,8 @@ pub fn run(width: u32, height: u32) {
   let mut game_board = Board::new(width, height, Food::next_rand_food(width, height), Snake::new(50, 50, next_direction));
   let mut window: PistonWindow = WindowSettings::new(TITLE, [game_board.width, game_board.height])
     .exit_on_esc(true).build().unwrap();
+
+  let mut game_is_running = true;
 
   while let Some(event) = window.next() {
     if let Some(Button::Keyboard(key)) = event.press_args() {
@@ -59,8 +62,14 @@ pub fn run(width: u32, height: u32) {
 
     render(&mut window, &event, &game_board);
 
-    if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS {
+    if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS && game_is_running {
       let mut snake = game_board.get_snake().advance(game_board.width as i32, game_board.height as i32);
+      if snake.has_collision() {
+        // TODO move game_is_running to board?
+        // board is really game's state
+        println!("collision!");
+        game_is_running = false;
+      }
       snake = snake.change_direction(next_direction);
 
       let (snake_head_x, snake_head_y) = game_board.get_snake().segments[0];

@@ -67,9 +67,13 @@ impl Snake {
 
     Snake { segments: self.segments.clone(), direction }
   }
-}
 
-// TODO implement collision detection
+  pub fn has_collision(&self) -> bool {
+    // TODO unit test
+    let (head_x, head_y) = self.segments[0];
+    self.segments.iter().skip(1).any(|&(x, y)| x == head_x && y == head_y)
+  }
+}
 
 #[cfg(test)]
 mod test {
@@ -200,15 +204,31 @@ mod test {
 
   #[test]
   fn eat_food_should_add_head_and_advance() {
-    let x = 25;
-    let y = 23;
-    let food = Food { x: x as u32, y: y as u32 };
-    let snake = Snake::new(x, y, Direction::Right);
+      let x = 25;
+      let y = 23;
+      let food = Food { x: x as u32, y: y as u32 };
+      let snake = Snake::new(x, y, Direction::Right);
 
-    let segments = vec![(x + SNAKE_SEGMENT_WIDTH as i32, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
-    let expected = Snake { segments, direction: Direction::Right };
-    let actual = snake.eat_food(&food);
+      let segments = vec![(x + SNAKE_SEGMENT_WIDTH as i32, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
+      let expected = Snake { segments, direction: Direction::Right };
+      let actual = snake.eat_food(&food);
 
-    assert_eq!(expected, actual);
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn has_collision_should_return_true_when_head_collides_with_at_least_one_segment() {
+      let segments = vec![(1, 1), (2, 1), (3, 1), (1, 1), (4, 1)];
+      let snake = Snake { segments, direction: Direction::Left };
+
+      assert!(snake.has_collision());
+  }
+
+  #[test]
+  fn has_collision_should_return_false_when_head_does_not_collide() {
+      let segments = vec![(1, 1), (2, 1), (3, 1), (4, 1), (5, 1)];
+      let snake = Snake { segments, direction: Direction::Left };
+
+      assert!(!snake.has_collision());
   }
 }
