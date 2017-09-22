@@ -7,19 +7,18 @@ pub struct Board {
   pub height: u32,
   food: Food,
   snake: Snake,
+  game_is_running: bool
 }
 
 impl Board {
   pub fn new(width: u32, height: u32, food: Food, snake: Snake) -> Board {
-      Board { width, height, food, snake }
+      Board { width, height, food, snake, game_is_running: true }
   }
 
   pub fn set_snake(self, snake: Snake) -> Board {
       Board {
-          width: self.width,
-          height: self.height,
-          food: self.food,
-          snake
+          snake,
+          ..self
       }
   }
 
@@ -29,15 +28,24 @@ impl Board {
 
   pub fn set_food(self, food: Food) -> Board {
       Board {
-          width: self.width,
-          height: self.height,
-          food: food,
-          snake: self.snake
+          food,
+          ..self
       }
   }
 
   pub fn get_food(&self) -> &Food {
       &self.food
+  }
+
+  pub fn set_game_is_running(self, game_is_running: bool) -> Board {
+      Board {
+          game_is_running,
+          ..self
+      }
+  }
+
+  pub fn is_game_running(&self) -> bool {
+      self.game_is_running
   }
 }
 

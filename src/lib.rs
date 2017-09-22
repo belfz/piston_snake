@@ -47,8 +47,6 @@ pub fn run(width: u32, height: u32) {
   let mut window: PistonWindow = WindowSettings::new(TITLE, [game_board.width, game_board.height])
     .exit_on_esc(true).build().unwrap();
 
-  let mut game_is_running = true;
-
   while let Some(event) = window.next() {
     if let Some(Button::Keyboard(key)) = event.press_args() {
         next_direction = match key {
@@ -62,19 +60,18 @@ pub fn run(width: u32, height: u32) {
 
     render(&mut window, &event, &game_board);
 
-    if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS && game_is_running {
+    if Instant::now().duration_since(last_position_update_timestamp).subsec_nanos() > ONE_HUNDRED_MS && game_board.is_game_running() {
       let mut snake = game_board.get_snake().advance(game_board.width as i32, game_board.height as i32);
       if snake.has_collision() {
-        // TODO move game_is_running to board?
-        // board is really game's state
         println!("collision!");
-        game_is_running = false;
+        game_board = game_board.set_game_is_running(false);
+        continue;
       }
       snake = snake.change_direction(next_direction);
 
       let (snake_head_x, snake_head_y) = game_board.get_snake().segments[0];
       if snake_head_x == game_board.get_food().x as i32 && snake_head_y == game_board.get_food().y as i32 {
-        snake = snake.eat_food(game_board.get_food());
+        snake = snake.eat_food(game_board.get_food(), game_board.width as i32, game_board.height as i32);
 
         let new_food = Food::next_rand_food(width, height);
         game_board = game_board.set_food(new_food);

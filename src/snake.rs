@@ -20,41 +20,35 @@ impl Snake {
     Snake { direction, segments }
   }
 
-  pub fn advance(&self, board_width: i32, board_height: i32) -> Snake {
-      let mut segments = self.segments.clone();
-      segments.pop();
-      let &(x, y) = segments.first().unwrap();
-      let (head_x, head_y) = match self.direction {
-        Direction::Up    => (x, y - SNAKE_STEP as i32),
-        Direction::Down  => (x, y + SNAKE_STEP as i32),
-        Direction::Left  => (x - SNAKE_STEP as i32, y),
-        Direction::Right => (x + SNAKE_STEP as i32, y)
+  fn add_segment(&self, mut segments: Vec<(i32, i32)>, board_width: i32, board_height: i32, head_x: i32, head_y: i32) -> Snake {
+      let (new_x, new_y) = match self.direction {
+        Direction::Up    => (head_x, head_y - SNAKE_STEP as i32),
+        Direction::Down  => (head_x, head_y + SNAKE_STEP as i32),
+        Direction::Left  => (head_x - SNAKE_STEP as i32, head_y),
+        Direction::Right => (head_x + SNAKE_STEP as i32, head_y)
       };
-      segments.insert(0, (head_x, head_y));
+      segments.insert(0, (new_x, new_y));
       segments = segments
         .iter()
         .map(|&(x, y)| {
-          // TODO take the bounds from the board / runtime
           let x = if x < 0 { board_width } else if x > board_width { 0 } else { x };
           let y = if y < 0 { board_height } else if y > board_height { 0 } else { y };
           (x, y)
         })
         .collect();
-      Snake { segments, ..*self }
+      Snake { segments, ..*self }   
   }
 
-  pub fn eat_food(&self, food: &Food) -> Snake {
-    let mut segments = self.segments.clone();
-    let x = food.x as i32;
-    let y = food.y as i32;
-    let (head_x, head_y) = match self.direction {
-        Direction::Up    => (x, y - SNAKE_STEP as i32),
-        Direction::Down  => (x, y + SNAKE_STEP as i32),
-        Direction::Left  => (x - SNAKE_STEP as i32, y),
-        Direction::Right => (x + SNAKE_STEP as i32, y)
-      };
-    segments.insert(0, (head_x, head_y));
-    Snake { segments, ..*self }
+  pub fn advance(&self, board_width: i32, board_height: i32) -> Snake {
+      let mut segments = self.segments.clone();
+      segments.pop();
+      let &(x, y) = segments.first().unwrap();
+      self.add_segment(segments, board_width, board_height, x, y)
+  }
+
+  pub fn eat_food(&self, food: &Food, board_width: i32, board_height: i32) -> Snake {
+    let segments = self.segments.clone();
+    self.add_segment(segments, board_width, board_height, food.x as i32, food.y as i32)
   }
 
   pub fn change_direction(&self, direction: Direction) -> Snake {
@@ -69,7 +63,6 @@ impl Snake {
   }
 
   pub fn has_collision(&self) -> bool {
-    // TODO unit test
     let (head_x, head_y) = self.segments[0];
     self.segments.iter().skip(1).any(|&(x, y)| x == head_x && y == head_y)
   }
@@ -211,7 +204,7 @@ mod test {
 
       let segments = vec![(x + SNAKE_SEGMENT_WIDTH as i32, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y), (x - SNAKE_SEGMENT_WIDTH as i32 * 2, y)];
       let expected = Snake { segments, direction: Direction::Right };
-      let actual = snake.eat_food(&food);
+      let actual = snake.eat_food(&food, 50, 50);
 
       assert_eq!(expected, actual);
   }
