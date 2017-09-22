@@ -48,5 +48,3 @@ impl Board {
       self.game_is_running
   }
 }
-
-// TODO add tests

@@ -15,6 +15,8 @@ use piston_window::*;
 use std::time::Instant;
 
 const ONE_HUNDRED_MS: u32 = 100000000;
+static WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+static RED:   [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 static TITLE: &'static str = "Rusnake!";
 
 fn draw_block<G: Graphics>(x: f64, y: f64, width: f64, context: &Context, graphics: &mut G) {
@@ -29,7 +31,8 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
     let &Snake { ref segments, .. } = game_board.get_snake();
     let &Food { x, y } = game_board.get_food();
     let width = snake::SNAKE_SEGMENT_WIDTH as f64;
-    clear([1.0; 4], graphics);
+    let color = if game_board.is_game_running() { WHITE } else { RED };
+    clear(color, graphics);
 
     // render each segment of the snake
     for &(x, y) in segments.iter() {
