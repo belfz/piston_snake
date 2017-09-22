@@ -46,7 +46,7 @@ impl Snake {
       self.add_segment(segments, board_width, board_height, x, y)
   }
 
-  pub fn eat_food(&self, food: &Food, board_width: i32, board_height: i32) -> Snake {
+  pub fn eat_food(self, food: &Food, board_width: i32, board_height: i32) -> Snake {
     let segments = self.segments.clone();
     self.add_segment(segments, board_width, board_height, food.x as i32, food.y as i32)
   }

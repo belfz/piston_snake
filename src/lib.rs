@@ -55,6 +55,15 @@ pub fn run(width: u32, height: u32) {
             Key::Left  => Direction::Left,
             Key::Up    => Direction::Up,
             Key::Down  => Direction::Down,
+            Key::R     => {
+              if !game_board.is_game_running() {
+                let direction = Direction::Right;
+                game_board = Board::new(width, height, Food::next_rand_food(width, height), Snake::new(50, 50, direction));
+                direction
+              } else {
+                next_direction
+              }
+            },
             _          => next_direction,
         };
     }
