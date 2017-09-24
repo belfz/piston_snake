@@ -29,7 +29,6 @@ fn draw_block<G: Graphics>(x: f64, y: f64, width: f64, context: &Context, graphi
 fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &Board) {
   window.draw_2d(event, |context, graphics| {
     let &Snake { ref segments, .. } = game_board.get_snake();
-    let &Food { x, y } = game_board.get_food();
     let width = snake::SNAKE_SEGMENT_WIDTH as f64;
     let color = if game_board.is_game_running() { WHITE } else { RED };
     clear(color, graphics);
@@ -40,7 +39,8 @@ fn render(window: &mut PistonWindow, event: &piston_window::Event, game_board: &
     }
 
     // render food
-    draw_block(x as f64, y as f64, width, &context, graphics);
+    let &Food { x: food_x, y: food_y } = game_board.get_food();
+    draw_block(food_x as f64, food_y as f64, width, &context, graphics);
   });
 }
 
