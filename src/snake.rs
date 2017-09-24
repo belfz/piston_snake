@@ -31,8 +31,8 @@ impl Snake {
       segments = segments
         .iter()
         .map(|&(x, y)| {
-          let x = if x < 0 { board_width } else if x > board_width { 0 } else { x };
-          let y = if y < 0 { board_height } else if y > board_height { 0 } else { y };
+          let x = if x < 0 { board_width } else if x >= board_width { 0 } else { x };
+          let y = if y < 0 { board_height } else if y >= board_height { 0 } else { y };
           (x, y)
         })
         .collect();
@@ -114,57 +114,57 @@ mod test {
   }
 
   #[test]
-  fn should_flip_to_other_side_when_advance_down_over_the_boundary() {
-      let x = 30;
-      let y = 30;
-      let direction = Direction::Down;
-      let snake = Snake::new(x, y, direction);
-
-      let segments = vec![(x, 0), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
-      let expected = Snake { segments , direction };
-      let actual = snake.advance(30, 30);
-
-      assert_eq!(expected, actual);
-  }
-
-  #[test]
-  fn should_flip_to_other_side_when_advance_up_over_the_boundary() {
-      let x = 30;
-      let y = 0;
-      let direction = Direction::Up;
-      let snake = Snake::new(x, y, direction);
-
-      let segments = vec![(x, 30), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
-      let expected = Snake { segments , direction };
-      let actual = snake.advance(30, 30);
-
-      assert_eq!(expected, actual);
-  }
-
-  #[test]
   fn should_flip_to_other_side_when_advance_right_over_the_boundary() {
-      let x = 30;
+      let board_width  = 40;
+      let board_height = 40;
       let y = 20;
       let direction = Direction::Right;
-      let snake = Snake::new(x, y, direction);
+      let snake = Snake { segments: vec![(30, y), (20, y), (10, y)], direction };
 
-      let segments = vec![(0, y), (x, y), (x - SNAKE_SEGMENT_WIDTH as i32, y)];
-      let expected = Snake { segments , direction };
-      let actual = snake.advance(30, 30);
+      let expected = Snake { segments: vec![(0, y), (30, y), (20, y)], direction };
+      let actual = snake.advance(board_width, board_height);
 
       assert_eq!(expected, actual);
   }
 
   #[test]
   fn should_flip_to_other_side_when_advance_left_over_the_boundary() {
-      let x = 0;
+      let board_width  = 40;
+      let board_height = 40;
       let y = 20;
       let direction = Direction::Left;
-      let snake = Snake { segments: vec![(x, y), (x + SNAKE_SEGMENT_WIDTH as i32, y), (x + 2 * SNAKE_SEGMENT_WIDTH as i32, y)], direction };
+      let snake = Snake { segments: vec![(0, y), (10, y), (20, y)], direction };
 
-      let segments = vec![(30, y), (0, y), (10, y)];
-      let expected = Snake { segments , direction };
-      let actual = snake.advance(30, 30);
+      let expected = Snake { segments: vec![(40, y), (0, y), (10, y)], direction };
+      let actual = snake.advance(board_width, board_height);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_up_over_the_boundary() {
+      let board_width  = 40;
+      let board_height = 40;
+      let x = 20;
+      let direction = Direction::Up;
+      let snake = Snake { segments: vec![(x, 0), (x, 10), (x, 20)], direction };
+
+      let expected = Snake { segments: vec![(x, 40), (x, 0), (x, 10)], direction };
+      let actual = snake.advance(board_width, board_height);
+
+      assert_eq!(expected, actual);
+  }
+
+  #[test]
+  fn should_flip_to_other_side_when_advance_down_over_the_boundary() {
+      let board_width  = 40;
+      let board_height = 40;
+      let x = 20;
+      let direction = Direction::Down;
+      let snake = Snake { segments: vec![(x, 30), (x, 20), (x, 10)], direction };
+
+      let expected = Snake { segments: vec![(x, 0), (x, 30), (x, 20)], direction };
+      let actual = snake.advance(board_width, board_height);
 
       assert_eq!(expected, actual);
   }
